@@ -17,9 +17,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
-	"pingservices/version"
+	"selmametrics/version"
 	"strconv"
 
 	"github.com/fatih/color"
@@ -53,6 +54,17 @@ var (
 )
 
 //
+type timeset struct {
+	PersOrgnr   string `json:"persorgnr"`
+	pointInTime string `json:"pointintime"`
+	stage       string `json:"stage"`
+}
+
+type timesetlists struct {
+	timesets []timeset
+}
+
+//
 func init() {
 	// instanciate a new logger
 	var log = logrus.New()
@@ -62,13 +74,13 @@ func init() {
 	flag.BoolVar(&srv, "s", true, "run in server mode (shorthand)")
 
 	flag.Usage = func() {
-		fmt.Fprint(os.Stderr, fmt.Sprintf(TETRACON, version.PingVersion()))
+		fmt.Fprint(os.Stderr, fmt.Sprintf(TETRACON, version.SelmaMetricsVersion()))
 		flag.PrintDefaults()
 	}
 
 	flag.Parse()
 	if vrsn {
-		fmt.Printf("flag version %s\n", version.PingVersion())
+		fmt.Printf("Selma Metrics Version %s\n", version.SelmaMetricsVersion())
 		os.Exit(0)
 	}
 
@@ -81,7 +93,7 @@ func init() {
 	}
 
 	if arg == "version" {
-		fmt.Printf("flag version %s\n", version.PingVersion())
+		fmt.Printf("flag version %s\n", version.SelmaMetricsVersion())
 		os.Exit(0)
 	}
 	//log.Formatter = new(logrus.JSONFormatter)
@@ -112,8 +124,8 @@ func main() {
 		showStartup(port)
 		color.Unset()
 		router := mux.NewRouter()
-
-		router.HandleFunc("/getnumberofsigned", ActionHandler).Methods("GET")
+		router.HandleFunc("/health-check", HealthCheckHandler).Methods("GET")
+		router.HandleFunc("/getnumberofsigned", GetNumberOfSignedHandler).Methods("GET")
 
 		//router.PathPrefix("/dist/").Handler(http.StripPrefix("/dist/", http.FileServer(http.Dir("dist"))))
 
@@ -126,10 +138,27 @@ func main() {
 	}
 }
 
-// Action handler
-func ActionHandler(w http.ResponseWriter, r *http.Request) {
+// GetNumberOfSignedHandler
+func GetNumberOfSignedHandler(w http.ResponseWriter, r *http.Request) {
 
+	numberofsigned := 17
 	fmt.Printf("Hostname: %s", GetHostname())
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, `{"NumberOfSigned": `+fmt.Sprintf("%d", numberofsigned)+`}`)
+}
+
+func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	// A very simple health check.
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+
+	// In the future we could report back on the status of our DB, or our cache
+	// (e.g. Redis) by performing a simple PING, and include them in the response.
+	io.WriteString(w, `{"alive": true}`)
+	io.WriteString(w, `{"status":`+fmt.Sprintf("%d", http.StatusOK)+`}`)
+	io.WriteString(w, `{"server":`+fmt.Sprintf("%s", GetHostname())+`}`)
+
+	fmt.Printf("Http-Status %d received\r\n", http.StatusOK)
 }
 
 //
