@@ -15,9 +15,11 @@ Services: selmametrics
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"selmametrics/version"
@@ -54,14 +56,15 @@ var (
 )
 
 //
-type timeset struct {
+type Timeset struct {
 	PersOrgnr   string `json:"persorgnr"`
-	pointInTime string `json:"pointintime"`
-	stage       string `json:"stage"`
+	PointInTime string `json:"pointintime"`
+	Stage       string `json:"stage"`
 }
 
-type timesetlists struct {
-	timesets []timeset
+//
+type TimesetLists struct {
+	Timesets []Timeset
 }
 
 //
@@ -114,8 +117,20 @@ func main() {
 
 	port := 8000
 	//
-	//	Read json configuration file
+	//	Read json metrics file
 	//
+	tslists, err := LoadSelmaMetrics("./timesets.json")
+	if err != nil {
+		fmt.Printf("JSON unmarshal Error: %s\r\n", err)
+		fmt.Printf("Check %s for JSON typing error\r\n", "./timesets.json")
+		os.Exit(1)
+	}
+	//
+	for key := range tslists {
+		fmt.Printf("PersOrgNr: %s\r\n", tslists[key].PersOrgnr)
+		fmt.Printf("PointInTime: %s\r\n", tslists[key].PointInTime)
+		fmt.Printf("Stage: %s\r\n", tslists[key].Stage)
+	}
 	// parse the arg
 	//arg := flag.Args()[0]
 	//
@@ -172,6 +187,21 @@ func GetHostname() string {
 		//fmt.Println("Hostname: ", hostname)
 	}
 	return hostname
+}
+
+//
+func LoadSelmaMetrics(file string) ([]Timeset, error) {
+
+	var timesets []Timeset
+	//timesetFile, err := os.Open(file)
+	timesetFile, err := ioutil.ReadFile(file)
+	//defer timesetFile.Close()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	err1 := json.Unmarshal(timesetFile, &timesets)
+	return timesets, err1
 }
 
 // showStartup
