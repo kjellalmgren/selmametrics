@@ -15,17 +15,18 @@ Services: selmametrics
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
+	"selmametrics/loadmetrics"
 	"selmametrics/version"
 	"strconv"
 
 	"github.com/fatih/color"
+
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -63,9 +64,9 @@ type Timeset struct {
 }
 
 //
-type TimesetLists struct {
-	Timesets []Timeset
-}
+//type TimesetLists struct {
+//	Timesets []Timeset
+//}
 
 //
 func init() {
@@ -119,7 +120,7 @@ func main() {
 	//
 	//	Read json metrics file
 	//
-	tslists, err := LoadSelmaMetrics("./timesets.json")
+	tslists, err := loadmetrics.LoadSelmaMetrics("./timesets.json")
 	if err != nil {
 		fmt.Printf("JSON unmarshal Error: %s\r\n", err)
 		fmt.Printf("Check %s for JSON typing error\r\n", "./timesets.json")
@@ -141,11 +142,18 @@ func main() {
 		router := mux.NewRouter()
 		router.HandleFunc("/health-check", HealthCheckHandler).Methods("GET")
 		router.HandleFunc("/getnumberofsigned", GetNumberOfSignedHandler).Methods("GET")
+		router.HandleFunc("/getnumberofsigned/search", GetNumberOfSignedSearchHandler).Methods("GET")
+		router.HandleFunc("/getnumberofsignedraw", GetNumberOfSignedRawHandler).Methods("GET")
 
 		//router.PathPrefix("/dist/").Handler(http.StripPrefix("/dist/", http.FileServer(http.Dir("dist"))))
 
 		//
-		err := http.ListenAndServe(":"+strconv.Itoa(port), router)
+		//err := http.ListenAndServe(":"+strconv.Itoa(port), router)
+		err := http.ListenAndServe(":"+strconv.Itoa(port),
+			handlers.LoggingHandler(os.Stdout, handlers.CORS(
+				handlers.AllowedMethods([]string{"GET, OPTIONS, POST, PUT, DELETE"}),
+				handlers.AllowedOrigins([]string{"*"}),
+				handlers.AllowedHeaders([]string{"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, X-Requested-With"}))(router)))
 		if err != nil {
 			fmt.Printf("ListenAndServer Error: %s", err.Error())
 			logrus.Fatal(err)
@@ -160,6 +168,24 @@ func GetNumberOfSignedHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Hostname: %s", GetHostname())
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, `{"NumberOfSigned": `+fmt.Sprintf("%d", numberofsigned)+`}`)
+}
+
+// GetNumberOfSignedSearchHandler
+func GetNumberOfSignedSearchHandler(w http.ResponseWriter, r *http.Request) {
+
+	numberofsigned := 22
+	fmt.Printf("Hostname: %s", GetHostname())
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, `{"NumberOfSignedSearch": `+fmt.Sprintf("%d", numberofsigned)+`}`)
+}
+
+// GetNumerOfSignedRawHandler
+func GetNumberOfSignedRawHandler(w http.ResponseWriter, r *http.Request) {
+
+	numberofsignedraw := 18
+	fmt.Printf("Hostname Raw: %s", GetHostname())
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, fmt.Sprintf("%d", numberofsignedraw))
 }
 
 func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
@@ -187,21 +213,6 @@ func GetHostname() string {
 		//fmt.Println("Hostname: ", hostname)
 	}
 	return hostname
-}
-
-//
-func LoadSelmaMetrics(file string) ([]Timeset, error) {
-
-	var timesets []Timeset
-	//timesetFile, err := os.Open(file)
-	timesetFile, err := ioutil.ReadFile(file)
-	//defer timesetFile.Close()
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	err1 := json.Unmarshal(timesetFile, &timesets)
-	return timesets, err1
 }
 
 // showStartup
