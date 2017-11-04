@@ -142,18 +142,25 @@ func main() {
 		router := mux.NewRouter()
 		router.HandleFunc("/health-check", HealthCheckHandler).Methods("GET")
 		router.HandleFunc("/getnumberofsigned", GetNumberOfSignedHandler).Methods("GET")
-		router.HandleFunc("/getnumberofsigned/search", GetNumberOfSignedSearchHandler).Methods("GET")
-		router.HandleFunc("/getnumberofsignedraw", GetNumberOfSignedRawHandler).Methods("GET")
+		router.HandleFunc("/getnumberofsigned/search", GetNumberOfSignedSearchHandler).Methods("POST")
+		router.HandleFunc("/getnumberofsigned/query", GetNumberOfSignedSearchHandler).Methods("POST")
 
 		//router.PathPrefix("/dist/").Handler(http.StripPrefix("/dist/", http.FileServer(http.Dir("dist"))))
 
 		//
+		/*
+			handlers.AllowedMethods([]string{"GET, POST, OPTIONS, PUT, DELETE"}),
+					handlers.AllowedOrigins([]string{"*"}),
+					handlers.AllowedHeaders([]string{"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, X-Requested-With"}
+		*/
 		//err := http.ListenAndServe(":"+strconv.Itoa(port), router)
+
+		headersOk := handlers.AllowedHeaders([]string{"Accept", "Content-Type", "X-Requested-With"})
+		originsOk := handlers.AllowedOrigins([]string{"*"})
+		methodsOk := handlers.AllowedMethods([]string{"POST", "GET", "OPTIONS"})
+
 		err := http.ListenAndServe(":"+strconv.Itoa(port),
-			handlers.LoggingHandler(os.Stdout, handlers.CORS(
-				handlers.AllowedMethods([]string{"GET, OPTIONS, POST, PUT, DELETE"}),
-				handlers.AllowedOrigins([]string{"*"}),
-				handlers.AllowedHeaders([]string{"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, X-Requested-With"}))(router)))
+			handlers.LoggingHandler(os.Stdout, handlers.CORS(originsOk, headersOk, methodsOk)(router)))
 		if err != nil {
 			fmt.Printf("ListenAndServer Error: %s", err.Error())
 			logrus.Fatal(err)
@@ -165,29 +172,34 @@ func main() {
 func GetNumberOfSignedHandler(w http.ResponseWriter, r *http.Request) {
 
 	numberofsigned := 17
-	fmt.Printf("Hostname: %s", GetHostname())
+	//fmt.Printf("Hostname: %s", GetHostname())
 	w.Header().Set("Content-Type", "application/json")
-	io.WriteString(w, `{"NumberOfSigned": `+fmt.Sprintf("%d", numberofsigned)+`}`)
+	//io.WriteString(w, `{"NumberOfSigned": `+fmt.Sprintf("%d", numberofsigned)+`}`)
+	io.WriteString(w, `[{"text": "upper_50", "value": `+fmt.Sprintf("%d", numberofsigned)+`}]`)
 }
 
 // GetNumberOfSignedSearchHandler
 func GetNumberOfSignedSearchHandler(w http.ResponseWriter, r *http.Request) {
 
-	numberofsigned := 22
-	fmt.Printf("Hostname: %s", GetHostname())
+	numberofsigned := 16
+	timenumber := 1450754160000
+	//fmt.Printf("Hostname: %s", GetHostname())
 	w.Header().Set("Content-Type", "application/json")
-	io.WriteString(w, `{"NumberOfSignedSearch": `+fmt.Sprintf("%d", numberofsigned)+`}`)
+	//io.WriteString(w, `[{"text": "upper_50", "value": `+fmt.Sprintf("%d", numberofsigned)+`}]`)
+	io.WriteString(w, `[{"target": "upper_50", "datapoints":[ [`+fmt.Sprintf("%d", numberofsigned)+`,`+fmt.Sprintf("%d", timenumber)+`]]`+` }]`)
 }
 
-// GetNumerOfSignedRawHandler
-func GetNumberOfSignedRawHandler(w http.ResponseWriter, r *http.Request) {
+// GetNumberOfSignedQueryHandler
+func GetNumberOfSignedQueryHandler(w http.ResponseWriter, r *http.Request) {
 
-	numberofsignedraw := 18
-	fmt.Printf("Hostname Raw: %s", GetHostname())
+	numberofsigned := 24
+	//fmt.Printf("Hostname: %s", GetHostname())
 	w.Header().Set("Content-Type", "application/json")
-	io.WriteString(w, fmt.Sprintf("%d", numberofsignedraw))
+	io.WriteString(w, `[{"target": "upper_50", "value": `+fmt.Sprintf("%d", numberofsigned)+`}]`)
+
 }
 
+// HealthCheckHandler
 func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	// A very simple health check.
 	w.WriteHeader(http.StatusOK)
