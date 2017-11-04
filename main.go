@@ -23,6 +23,7 @@ import (
 	"selmametrics/loadmetrics"
 	"selmametrics/version"
 	"strconv"
+	"time"
 
 	"github.com/fatih/color"
 
@@ -171,7 +172,7 @@ func main() {
 // GetNumberOfSignedHandler
 func GetNumberOfSignedHandler(w http.ResponseWriter, r *http.Request) {
 
-	numberofsigned := 17
+	numberofsigned := 19
 	//fmt.Printf("Hostname: %s", GetHostname())
 	w.Header().Set("Content-Type", "application/json")
 	//io.WriteString(w, `{"NumberOfSigned": `+fmt.Sprintf("%d", numberofsigned)+`}`)
@@ -181,12 +182,14 @@ func GetNumberOfSignedHandler(w http.ResponseWriter, r *http.Request) {
 // GetNumberOfSignedSearchHandler
 func GetNumberOfSignedSearchHandler(w http.ResponseWriter, r *http.Request) {
 
-	numberofsigned := 16
-	timenumber := 1450754160000
+	numberofsigned := 19
+	//timenumber := 1450754160000
+	timenumber := time.Now().UnixNano()
 	//fmt.Printf("Hostname: %s", GetHostname())
 	w.Header().Set("Content-Type", "application/json")
-	//io.WriteString(w, `[{"text": "upper_50", "value": `+fmt.Sprintf("%d", numberofsigned)+`}]`)
+
 	io.WriteString(w, `[{"target": "upper_50", "datapoints":[ [`+fmt.Sprintf("%d", numberofsigned)+`,`+fmt.Sprintf("%d", timenumber)+`]]`+` }]`)
+
 }
 
 // GetNumberOfSignedQueryHandler
