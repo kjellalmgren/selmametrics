@@ -1,3 +1,6 @@
+// Package: Loadmetrics.go
+// Author: Tetracon AB, 2017
+// Developer: Kjell Almgren
 //
 package loadmetrics
 
@@ -8,14 +11,14 @@ import (
 	"os"
 )
 
-//
+// Timeset
 type Timeset struct {
 	PersOrgnr   string `json:"persorgnr"`
 	PointInTime string `json:"pointintime"`
 	Stage       string `json:"stage"`
 }
 
-//
+// LoadSelmaMetrics
 func LoadSelmaMetrics(file string) ([]Timeset, error) {
 
 	var timesets []Timeset

@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"os"
 	"selmametrics/loadmetrics"
+	"selmametrics/utility"
 	"selmametrics/version"
 	"strconv"
 	"time"
@@ -64,12 +65,7 @@ type Timeset struct {
 	Stage       string `json:"stage"`
 }
 
-//
-//type TimesetLists struct {
-//	Timesets []Timeset
-//}
-
-//
+// init
 func init() {
 	// instanciate a new logger
 	var log = logrus.New()
@@ -212,30 +208,22 @@ func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	// (e.g. Redis) by performing a simple PING, and include them in the response.
 	io.WriteString(w, `{"alive": true}`)
 	io.WriteString(w, `{"status":`+fmt.Sprintf("%d", http.StatusOK)+`}`)
-	io.WriteString(w, `{"server":`+fmt.Sprintf("%s", GetHostname())+`}`)
+	io.WriteString(w, `{"server":`+fmt.Sprintf("%s", Utility.GetHostname())+`}`)
 
 	fmt.Printf("Http-Status %d received\r\n", http.StatusOK)
 }
 
-//
-//	Get hostname of running server
-//
-func GetHostname() string {
-
-	hostname, err1 := os.Hostname()
-	if err1 == nil {
-		//log.Printf("Hostname: %s", hostname)
-		//fmt.Println("Hostname: ", hostname)
-	}
-	return hostname
-}
-
 // showStartup
 func showStartup(port int) {
+
 	color.Set(color.FgHiGreen)
-	fmt.Printf("Selma metrics services is started on server: ")
+	fmt.Printf("Selma metrics services (")
 	color.Set(color.FgHiWhite)
-	fmt.Printf("%s", GetHostname())
+	fmt.Printf("%s", version.SelmaMetricsVersion())
+	color.Set(color.FgHiGreen)
+	fmt.Printf(") Selma metrics API-services is started on server: ")
+	color.Set(color.FgHiWhite)
+	fmt.Printf("%s", Utility.GetHostname())
 	color.Set(color.FgHiGreen)
 	fmt.Printf(" is listen on port ")
 	color.Set(color.FgHiWhite)
