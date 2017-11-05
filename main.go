@@ -19,9 +19,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-
-	signedmetrics "selmametrics/SignedMetrics"
 	"selmametrics/loadmetrics"
+	"selmametrics/loginmetrics"
+	"selmametrics/signedmetrics"
+
 	"selmametrics/utility"
 	"selmametrics/version"
 	"strconv"
@@ -65,6 +66,8 @@ type Timeset struct {
 	Stage       string `json:"stage"`
 }
 
+var filename string = "./timesets.json"
+
 // init
 func init() {
 	// instanciate a new logger
@@ -73,7 +76,6 @@ func init() {
 	flag.BoolVar(&vrsn, "v", false, "print version and exit (shorthand)")
 	flag.BoolVar(&srv, "server", true, "run in server mode")
 	flag.BoolVar(&srv, "s", true, "run in server mode (shorthand)")
-
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, fmt.Sprintf(TETRACON, version.SelmaMetricsVersion()))
 		flag.PrintDefaults()
@@ -117,7 +119,7 @@ func main() {
 	//
 	//	Read json metrics file
 	//
-	tslists, err := loadmetrics.LoadSelmaMetrics("./timesets.json")
+	tslists, err := loadmetrics.LoadSelmaMetrics(filename)
 	if err != nil {
 		fmt.Printf("JSON unmarshal Error: %s\r\n", err)
 		fmt.Printf("Check %s for JSON typing error\r\n", "./timesets.json")
@@ -145,7 +147,11 @@ func main() {
 		router.HandleFunc("/getnumberofsigned/query", signedmetrics.GetNumberOfSignedSearchHandler).Methods("POST")
 		//
 		// Package: loginmetrics.go
-
+		router.HandleFunc("/health-check", loginmetrics.HealthCheck1Handler).Methods("GET")
+		router.HandleFunc("/getnumberoflogin", loginmetrics.GetNumberOfLoginHandler).Methods("GET")
+		router.HandleFunc("/getnumberoflogin/search", loginmetrics.GetNumberOfLoginSearchHandler).Methods("POST")
+		router.HandleFunc("/getnumberoflogin/query", loginmetrics.GetNumberOfLoginSearchHandler).Methods("POST")
+		//
 		// To support CORS: Cross Domain Resource Sharing, AllowedOrigins should be a domain
 		headersOk := handlers.AllowedHeaders([]string{"Accept", "Content-Type", "X-Requested-With"})
 		originsOk := handlers.AllowedOrigins([]string{"*"})

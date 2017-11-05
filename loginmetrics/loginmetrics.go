@@ -1,8 +1,8 @@
-// Package: signedmetrics.go
+// Packages: loginmetrics.go
 // Author: Tetracon AB, 2017
 // Developer: Kjell Almgren
 //
-package signedmetrics
+package loginmetrics
 
 import (
 	"fmt"
@@ -23,39 +23,39 @@ type Timeset struct {
 
 var filename = "./timesets.json"
 
-// GetNumberOfSignedHandler
-func GetNumberOfSignedHandler(w http.ResponseWriter, r *http.Request) {
+// GetNumberOfLoginHandler
+func GetNumberOfLoginHandler(w http.ResponseWriter, r *http.Request) {
 
-	numberofsigned := loadMetrics(filename)
+	numberoflogin := loadMetrics(filename)
 	//fmt.Printf("Hostname: %s", GetHostname())
 	w.Header().Set("Content-Type", "application/json")
-	//io.WriteString(w, `{"NumberOfSigned": `+fmt.Sprintf("%d", numberofsigned)+`}`)
-	io.WriteString(w, `[{"text": "upper_50", "value": `+fmt.Sprintf("%d", numberofsigned)+`}]`)
+	//io.WriteString(w, `{"NumberOfLogin": `+fmt.Sprintf("%d", numberoflogin)+`}`)
+	io.WriteString(w, `[{"text": "upper_50", "value": `+fmt.Sprintf("%d", numberoflogin)+`}]`)
 }
 
-// GetNumberOfSignedSearchHandler
-func GetNumberOfSignedSearchHandler(w http.ResponseWriter, r *http.Request) {
+// GetNumberOfLoginSearchHandler
+func GetNumberOfLoginSearchHandler(w http.ResponseWriter, r *http.Request) {
 
-	numberofsigned := loadMetrics(filename)
+	numberoflogin := loadMetrics(filename)
 	//timenumber := 1450754160000
 	timenumber := time.Now().UnixNano()
 	//fmt.Printf("Hostname: %s", GetHostname())
 	w.Header().Set("Content-Type", "application/json")
 
-	io.WriteString(w, `[{"target": "upper_50", "datapoints":[ [`+fmt.Sprintf("%d", numberofsigned)+`,`+fmt.Sprintf("%d", timenumber)+`]]`+` }]`)
+	io.WriteString(w, `[{"target": "upper_50", "datapoints":[ [`+fmt.Sprintf("%d", numberoflogin)+`,`+fmt.Sprintf("%d", timenumber)+`]]`+` }]`)
 }
 
-// GetNumberOfSignedQueryHandler
-func GetNumberOfSignedQueryHandler(w http.ResponseWriter, r *http.Request) {
+// GetNumberOfLoginQueryHandler
+func GetNumberOfLoginQueryHandler(w http.ResponseWriter, r *http.Request) {
 
-	numberofsigned := loadMetrics(filename)
+	numberoflogin := loadMetrics(filename)
 	//fmt.Printf("Hostname: %s", GetHostname())
 	w.Header().Set("Content-Type", "application/json")
-	io.WriteString(w, `[{"target": "upper_50", "value": `+fmt.Sprintf("%d", numberofsigned)+`}]`)
+	io.WriteString(w, `[{"target": "upper_50", "value": `+fmt.Sprintf("%d", numberoflogin)+`}]`)
 }
 
 // HealthCheckHandler
-func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+func HealthCheck1Handler(w http.ResponseWriter, r *http.Request) {
 	// A very simple health check.
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
@@ -72,7 +72,7 @@ func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 // loadMetrics()  - private function to this package
 func loadMetrics(filename string) int {
 
-	numberofsigned := 0
+	numberoflogin := 0
 	tslists, err := loadmetrics.LoadSelmaMetrics(filename)
 	if err != nil {
 		fmt.Printf("JSON unmarshal Error: %s\r\n", err)
@@ -80,9 +80,9 @@ func loadMetrics(filename string) int {
 		os.Exit(1)
 	}
 	for key := range tslists {
-		if (tslists[key].Stage) == "S" {
-			numberofsigned++
+		if (tslists[key].Stage) == "A" {
+			numberoflogin++
 		}
 	}
-	return numberofsigned
+	return numberoflogin
 }
