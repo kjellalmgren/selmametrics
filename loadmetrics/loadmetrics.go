@@ -18,7 +18,7 @@ type Timeset struct {
 	Stage       string `json:"stage"`
 }
 
-// LoadSelmaMetrics
+// LoadSelmaMetrics, return array of Timeset
 func LoadSelmaMetrics(file string) ([]Timeset, error) {
 
 	var timesets []Timeset

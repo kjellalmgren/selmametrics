@@ -17,14 +17,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
+
+	signedmetrics "selmametrics/SignedMetrics"
 	"selmametrics/loadmetrics"
 	"selmametrics/utility"
 	"selmametrics/version"
 	"strconv"
-	"time"
 
 	"github.com/fatih/color"
 
@@ -137,21 +137,16 @@ func main() {
 		showStartup(port)
 		color.Unset()
 		router := mux.NewRouter()
-		router.HandleFunc("/health-check", HealthCheckHandler).Methods("GET")
-		router.HandleFunc("/getnumberofsigned", GetNumberOfSignedHandler).Methods("GET")
-		router.HandleFunc("/getnumberofsigned/search", GetNumberOfSignedSearchHandler).Methods("POST")
-		router.HandleFunc("/getnumberofsigned/query", GetNumberOfSignedSearchHandler).Methods("POST")
-
-		//router.PathPrefix("/dist/").Handler(http.StripPrefix("/dist/", http.FileServer(http.Dir("dist"))))
-
 		//
-		/*
-			handlers.AllowedMethods([]string{"GET, POST, OPTIONS, PUT, DELETE"}),
-					handlers.AllowedOrigins([]string{"*"}),
-					handlers.AllowedHeaders([]string{"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, X-Requested-With"}
-		*/
-		//err := http.ListenAndServe(":"+strconv.Itoa(port), router)
+		// Package: signedmetrics.go
+		router.HandleFunc("/health-check", signedmetrics.HealthCheckHandler).Methods("GET")
+		router.HandleFunc("/getnumberofsigned", signedmetrics.GetNumberOfSignedHandler).Methods("GET")
+		router.HandleFunc("/getnumberofsigned/search", signedmetrics.GetNumberOfSignedSearchHandler).Methods("POST")
+		router.HandleFunc("/getnumberofsigned/query", signedmetrics.GetNumberOfSignedSearchHandler).Methods("POST")
+		//
+		// Package: loginmetrics.go
 
+		// To support CORS: Cross Domain Resource Sharing, AllowedOrigins should be a domain
 		headersOk := handlers.AllowedHeaders([]string{"Accept", "Content-Type", "X-Requested-With"})
 		originsOk := handlers.AllowedOrigins([]string{"*"})
 		methodsOk := handlers.AllowedMethods([]string{"POST", "GET", "OPTIONS"})
@@ -165,54 +160,6 @@ func main() {
 	}
 }
 
-// GetNumberOfSignedHandler
-func GetNumberOfSignedHandler(w http.ResponseWriter, r *http.Request) {
-
-	numberofsigned := 19
-	//fmt.Printf("Hostname: %s", GetHostname())
-	w.Header().Set("Content-Type", "application/json")
-	//io.WriteString(w, `{"NumberOfSigned": `+fmt.Sprintf("%d", numberofsigned)+`}`)
-	io.WriteString(w, `[{"text": "upper_50", "value": `+fmt.Sprintf("%d", numberofsigned)+`}]`)
-}
-
-// GetNumberOfSignedSearchHandler
-func GetNumberOfSignedSearchHandler(w http.ResponseWriter, r *http.Request) {
-
-	numberofsigned := 19
-	//timenumber := 1450754160000
-	timenumber := time.Now().UnixNano()
-	//fmt.Printf("Hostname: %s", GetHostname())
-	w.Header().Set("Content-Type", "application/json")
-
-	io.WriteString(w, `[{"target": "upper_50", "datapoints":[ [`+fmt.Sprintf("%d", numberofsigned)+`,`+fmt.Sprintf("%d", timenumber)+`]]`+` }]`)
-
-}
-
-// GetNumberOfSignedQueryHandler
-func GetNumberOfSignedQueryHandler(w http.ResponseWriter, r *http.Request) {
-
-	numberofsigned := 24
-	//fmt.Printf("Hostname: %s", GetHostname())
-	w.Header().Set("Content-Type", "application/json")
-	io.WriteString(w, `[{"target": "upper_50", "value": `+fmt.Sprintf("%d", numberofsigned)+`}]`)
-
-}
-
-// HealthCheckHandler
-func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	// A very simple health check.
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-
-	// In the future we could report back on the status of our DB, or our cache
-	// (e.g. Redis) by performing a simple PING, and include them in the response.
-	io.WriteString(w, `{"alive": true}`)
-	io.WriteString(w, `{"status":`+fmt.Sprintf("%d", http.StatusOK)+`}`)
-	io.WriteString(w, `{"server":`+fmt.Sprintf("%s", Utility.GetHostname())+`}`)
-
-	fmt.Printf("Http-Status %d received\r\n", http.StatusOK)
-}
-
 // showStartup
 func showStartup(port int) {
 
@@ -223,7 +170,7 @@ func showStartup(port int) {
 	color.Set(color.FgHiGreen)
 	fmt.Printf(") Selma metrics API-services is started on server: ")
 	color.Set(color.FgHiWhite)
-	fmt.Printf("%s", Utility.GetHostname())
+	fmt.Printf("%s", utility.GetHostname())
 	color.Set(color.FgHiGreen)
 	fmt.Printf(" is listen on port ")
 	color.Set(color.FgHiWhite)

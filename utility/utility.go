@@ -2,7 +2,7 @@
 // Author: Tetracon AB, 2017
 // Developer: Kjell Almgren
 //
-package Utility
+package utility
 
 import "os"
 
