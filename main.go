@@ -117,7 +117,7 @@ func main() {
 
 	port := 8000
 	//
-	//	Read json metrics file
+	//	Read json metrics file, this is only for test
 	//
 	tslists, err := loadmetrics.LoadSelmaMetrics(filename)
 	if err != nil {
@@ -139,6 +139,8 @@ func main() {
 		showStartup(port)
 		color.Unset()
 		router := mux.NewRouter()
+		//
+		// for ../search and ../query handler grafana want us to use method "POST"
 		//
 		// Package: signedmetrics.go
 		router.HandleFunc("/health-check", signedmetrics.HealthCheckHandler).Methods("GET")
