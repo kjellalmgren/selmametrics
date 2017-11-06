@@ -66,7 +66,7 @@ type Timeset struct {
 	Stage       string `json:"stage"`
 }
 
-var filename string = "./timesets.json"
+var filename = "./timesets.json"
 
 // init
 func init() {
