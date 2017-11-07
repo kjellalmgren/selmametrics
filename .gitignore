@@ -10,6 +10,9 @@
 #OSX files
 .DS_Store
 
+# timesets
+timesets.json
+
 # Executables
 selmametrics
 
