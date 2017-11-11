@@ -12,6 +12,10 @@
 
 # timesets
 timesets.json
+timesets1.json
+timesets2.json
+timesets-all.json
+timesets-nov.json
 
 # Executables
 selmametrics

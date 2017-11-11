@@ -2,7 +2,7 @@
 Services: selmametrics
 	Author: Kjell Osse Almgren, Tetracon AB
 	Date: 2017-11-02
-	Description: Service to feed grafana with metrics, test purpose
+	Description: Service to feed grafana with business metrics, just for test purpose
 	Architecture:
 	win32: GOOS=windows GOARCH=386 go build -v
 	win64: GOOS=windows GOARCH=amd64 go build -v
@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"selmametrics/loadmetrics"
+	"selmametrics/agedmetrics"
 	"selmametrics/loginmetrics"
 	"selmametrics/signedmetrics"
 
@@ -119,18 +119,18 @@ func main() {
 	//
 	//	Read json metrics file, this is only for test
 	//
-	tslists, err := loadmetrics.LoadSelmaMetrics(filename)
-	if err != nil {
-		fmt.Printf("JSON unmarshal Error: %s\r\n", err)
-		fmt.Printf("Check %s for JSON typing error\r\n", "./timesets.json")
-		os.Exit(1)
-	}
+	//tslists, err := loadmetrics.LoadSelmaMetrics(filename)
+	//if err != nil {
+	//	fmt.Printf("JSON unmarshal Error: %s\r\n", err)
+	//	fmt.Printf("Check %s for JSON typing error\r\n", "./timesets.json")
+	//	os.Exit(1)
+	//}
 	//
-	for key := range tslists {
-		fmt.Printf("PersOrgNr: %s\r\n", tslists[key].PersOrgnr)
-		fmt.Printf("PointInTime: %s\r\n", tslists[key].PointInTime)
-		fmt.Printf("Stage: %s\r\n", tslists[key].Stage)
-	}
+	//for key := range tslists {
+	//	fmt.Printf("PersOrgNr: %s\r\n", tslists[key].PersOrgnr)
+	//	fmt.Printf("PointInTime: %s\r\n", tslists[key].PointInTime)
+	//	fmt.Printf("Stage: %s\r\n", tslists[key].Stage)
+	//}
 	// parse the arg
 	//arg := flag.Args()[0]
 	//
@@ -154,6 +154,14 @@ func main() {
 		router.HandleFunc("/getnumberoflogin/search", loginmetrics.GetNumberOfLoginSearchHandler).Methods("POST")
 		router.HandleFunc("/getnumberoflogin/query", loginmetrics.GetNumberOfLoginSearchHandler).Methods("POST")
 		//
+		router.HandleFunc("/health-check", agedmetrics.HealthCheck1Handler).Methods("GET")
+		router.HandleFunc("/getaverageage", agedmetrics.GetAverageAgeHandler).Methods("GET")
+		router.HandleFunc("/getaverageage/search", agedmetrics.GetAverageAgeSearchHandler).Methods("POST")
+		router.HandleFunc("/getaverageage/query", agedmetrics.GetAverageAgeSearchHandler).Methods("POST")
+		//
+		router.HandleFunc("/getaverageagea", agedmetrics.GetAverageAgeAHandler).Methods("GET")
+		router.HandleFunc("/getaverageagea/search", agedmetrics.GetAverageAgeASearchHandler).Methods("POST")
+		router.HandleFunc("/getaverageagea/query", agedmetrics.GetAverageAgeASearchHandler).Methods("POST")
 		// To support CORS: Cross Domain Resource Sharing, AllowedOrigins should be a domain
 		headersOk := handlers.AllowedHeaders([]string{"Accept", "Content-Type", "X-Requested-With"})
 		originsOk := handlers.AllowedOrigins([]string{"*"})
