@@ -20,8 +20,10 @@ import (
 	"net/http"
 	"os"
 	"selmametrics/agedmetrics"
+	"selmametrics/loadmetrics"
 	"selmametrics/loginmetrics"
 	"selmametrics/signedmetrics"
+	"time"
 
 	"selmametrics/utility"
 	"selmametrics/version"
@@ -76,6 +78,7 @@ func init() {
 	flag.BoolVar(&vrsn, "v", false, "print version and exit (shorthand)")
 	flag.BoolVar(&srv, "server", true, "run in server mode")
 	flag.BoolVar(&srv, "s", true, "run in server mode (shorthand)")
+	flag.BoolVar(&srv, "generate", true, "genrate data to processing 3D")
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, fmt.Sprintf(TETRACON, version.SelmaMetricsVersion()))
 		flag.PrintDefaults()
@@ -97,6 +100,11 @@ func init() {
 
 	if arg == "version" {
 		fmt.Printf("flag version %s\n", version.SelmaMetricsVersion())
+		os.Exit(0)
+	}
+	if arg == "generate" {
+		fmt.Printf("Start genrate data for processing 3D")
+		generateProcessingMetrics()
 		os.Exit(0)
 	}
 	//log.Formatter = new(logrus.JSONFormatter)
@@ -205,4 +213,64 @@ func usageAndExit(message string, exitCode int) {
 	flag.Usage()
 	fmt.Fprintf(os.Stderr, "\n")
 	os.Exit(exitCode)
+}
+
+// generateProcessingMetrics
+func generateProcessingMetrics() {
+
+	layOut := "2006-01-02 15:04:05"
+	//layout := "yyyy-MM-dd hh:mm:ss"
+	t := time.Now()
+	currentyear := t.Year()
+	timesets, err := loadmetrics.LoadSelmaMetrics("./timesets.json")
+	if err != nil {
+		panic(err)
+		fmt.Println("JSON")
+		os.Exit(1)
+	}
+	for _, timeset := range timesets {
+		//fmt.Printf("%s %s %s\r\n", timeset.PersOrgnr, timeset.PointInTime, timeset.Stage)
+		sage := timeset.PersOrgnr[0:4]
+		gendertemp := timeset.PersOrgnr[10:]
+		sgender := gendertemp[0:1]
+		gender := findGender(sgender)
+		iage, err1 := strconv.Atoi(sage)
+		if err1 != nil {
+			panic(err1)
+			os.Exit(1)
+		}
+		// Writeline
+		//stime = timesets[key].PointInTime
+		ttime, err2 := time.Parse(layOut, timeset.PointInTime)
+		if err2 != nil {
+			panic(err2)
+			os.Exit(1)
+		} else {
+			_, week := ttime.ISOWeek()
+			day := ttime.Weekday()
+			hour := ttime.Hour()
+			age := int64(0)
+			age = int64(currentyear) - int64(iage)
+			stage := timeset.Stage
+			fmt.Printf("%d,%d,%d,%d,\"%s\",\"%s\"\r\n", week, day, hour, age, stage, gender)
+		}
+
+	}
+}
+
+// findGender
+func findGender(sgender string) string {
+
+	ret := ""
+	igender, err := strconv.Atoi(sgender)
+	if err != nil {
+		panic(err)
+		os.Exit(1)
+	}
+	if igender%2 == 0 {
+		ret = "W"
+	} else {
+		ret = "M"
+	}
+	return ret
 }

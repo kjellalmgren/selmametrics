@@ -16,6 +16,9 @@ timesets1.json
 timesets2.json
 timesets-all.json
 timesets-nov.json
+selmametrics.csv
+selmametrics1.csv
+selmametrics2.csv
 
 # Executables
 selmametrics
