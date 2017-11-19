@@ -2,7 +2,7 @@
 #
 # -------------------------------------------------
 # FROM resin/raspbian
-# MAINTAINER kjell.almgren@tetracon.se
+# MAINTAINER kjell.almgren[at]tetracon.se
 # -------------------------------------------------
 #
 # FROM resin/rpi-raspbian
