@@ -1,0 +1,34 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Selma Metrics API
+  description: Description
+  termsOfService: terms
+  contact:
+    name: Kjell Almgren
+    email: kjell.almgren@landshypotek.se
+  license:
+    name: MIT
+    url: 'http://opensource.org/licenses/MIT'
+host: 'localhost:8000'
+basePath: /
+tags:
+  - name: Selma signed metrics API
+    description: Access Selma signed metrics
+schemes:
+  - http
+  - https
+paths:
+  /getnumberofsigned:
+    get:
+      tags:
+        - getnumberofsigned
+      summary: Get number of signed total
+      description: Description of number of signed
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful
+        '404':
+          description: Invalid page
