@@ -247,14 +247,16 @@ func generateProcessingMetrics() {
 			os.Exit(1)
 		} else {
 			_, week := ttime.ISOWeek()
-			day := ttime.Weekday()
+			day := ttime.Weekday() - 1 // swedish week day
 			hour := ttime.Hour()
 			age := int64(0)
 			age = int64(currentyear) - int64(iage)
 			stage := timeset.Stage
+			if day == -1 {
+				day = 6
+			}
 			fmt.Printf("%d,%d,%d,%d,\"%s\",\"%s\"\r\n", week, day, hour, age, stage, gender)
 		}
-
 	}
 }
 
