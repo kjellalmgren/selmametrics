@@ -221,11 +221,16 @@ func generateProcessingMetrics() {
 	layOut := "2006-01-02 15:04:05"
 	//layout := "yyyy-MM-dd hh:mm:ss"
 	t := time.Now()
+	location, err1 := time.LoadLocation("Europe/Stockholm")
+	if err1 != nil {
+		fmt.Println(err1)
+	}
+	fmt.Println("Location : ", location, " Time : ", t.In(location)) // Europe/Stockholm
+	fmt.Println()
 	currentyear := t.Year()
 	timesets, err := loadmetrics.LoadSelmaMetrics("./timesets.json")
 	if err != nil {
 		panic(err)
-		fmt.Println("JSON")
 		os.Exit(1)
 	}
 	for _, timeset := range timesets {
@@ -275,4 +280,36 @@ func findGender(sgender string) string {
 		ret = "M"
 	}
 	return ret
+}
+
+//
+//type Timeset struct {
+//	PersOrgnr   string `json:"persorgnr"`
+//	PointInTime string `json:"pointintime"`
+//	Stage       string `json:"stage"`
+//}
+// removeDuplicates
+func removeDuplicate(lists []struct {
+	PersOrgNr   string
+	PointInTime string
+	Stage       string
+}) []Timeset {
+
+	result := []Timeset{}
+	// **
+	// Use map to record duplicates as we find them.
+	//encountered := map[string]bool{}
+	//for v := range lists {
+	//encountered[lists[v]] = true
+	//}
+	// Copy to PersOrgnr to a string array
+	//for v := range lists {
+	//if encountered[lists[v]] == true {
+	//
+	//} else {
+	//	encountered[lists[v]] = true
+	//	result = append(result, lists[v])
+	//}
+	//}
+	return result
 }
